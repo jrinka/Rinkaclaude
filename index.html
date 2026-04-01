@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scattergories!</title>
+  <style>
+    :root {
+      --purple: #7c3aed;
+      --pink:   #ec4899;
+      --yellow: #fbbf24;
+      --green:  #10b981;
+      --blue:   #3b82f6;
+      --bg:     #fdf4ff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-align: center;
+      margin-bottom: 4px;
+      letter-spacing: -1px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    /* ── Top bar ── */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      width: 100%;
+      max-width: 860px;
+    }
+
+    /* Letter die */
+    .letter-box {
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      color: #fff;
+      border-radius: 20px;
+      width: 120px;
+      height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 24px rgba(124,58,237,0.35);
+      flex-shrink: 0;
+    }
+
+    .letter-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+
+    .letter-display {
+      font-size: 5rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    /* Timer */
+    .timer-box {
+      background: #fff;
+      border: 3px solid var(--yellow);
+      border-radius: 20px;
+      width: 150px;
+      height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(251,191,36,0.25);
+      flex-shrink: 0;
+    }
+
+    .timer-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #aaa;
+      margin-bottom: 4px;
+    }
+
+    .timer-display {
+      font-size: 3.2rem;
+      font-weight: 900;
+      color: var(--purple);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .timer-display.urgent { color: #ef4444; animation: pulse 0.8s infinite; }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50%       { transform: scale(1.06); }
+    }
+
+    /* Progress bar */
+    .progress-wrap {
+      width: 100%;
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), var(--yellow));
+      border-radius: 4px;
+      transition: width 1s linear, background 1s;
+      width: 100%;
+    }
+
+    .progress-bar.urgent { background: linear-gradient(90deg, #ef4444, #f97316); }
+
+    /* Buttons */
+    .btn {
+      padding: 14px 32px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      letter-spacing: 0.5px;
+    }
+
+    .btn:active { transform: scale(0.96); }
+
+    .btn-start {
+      background: linear-gradient(135deg, var(--green), #059669);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(16,185,129,0.4);
+    }
+
+    .btn-stop {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(239,68,68,0.4);
+    }
+
+    .btn-new {
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(124,58,237,0.4);
+    }
+
+    .btn-roll {
+      background: linear-gradient(135deg, var(--blue), #2563eb);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(59,130,246,0.4);
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      border-radius: 10px;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    /* Time-up banner */
+    .time-up-banner {
+      display: none;
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      color: #fff;
+      font-size: 1.6rem;
+      font-weight: 900;
+      text-align: center;
+      padding: 14px 40px;
+      border-radius: 16px;
+      box-shadow: 0 6px 24px rgba(239,68,68,0.4);
+      animation: pop 0.4s ease;
+      width: 100%;
+      max-width: 860px;
+    }
+
+    .time-up-banner.show { display: block; }
+
+    @keyframes pop {
+      0%   { transform: scale(0.7); opacity: 0; }
+      80%  { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Round info */
+    .round-info {
+      color: #6b7280;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    /* Categories grid */
+    .categories-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+      width: 100%;
+      max-width: 860px;
+    }
+
+    .category-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 14px 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-left: 4px solid var(--purple);
+    }
+
+    .category-card:nth-child(2n)   { border-color: var(--pink); }
+    .category-card:nth-child(3n)   { border-color: var(--blue); }
+    .category-card:nth-child(4n)   { border-color: var(--green); }
+    .category-card:nth-child(5n)   { border-color: var(--yellow); }
+
+    .category-num {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #d1d5db;
+      min-width: 20px;
+    }
+
+    .category-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    /* How to play */
+    .how-to {
+      max-width: 860px;
+      width: 100%;
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px 28px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-top: 8px;
+    }
+
+    .how-to h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--purple);
+      margin-bottom: 10px;
+    }
+
+    .how-to ol {
+      padding-left: 22px;
+      color: #4b5563;
+      font-size: 0.93rem;
+      line-height: 1.9;
+    }
+
+    footer {
+      margin-top: 32px;
+      color: #d1d5db;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Scattergories!</h1>
+  <p class="subtitle">Think fast — one letter, tons of categories!</p>
+
+  <div class="top-bar">
+    <!-- Letter -->
+    <div class="letter-box">
+      <span class="letter-label">Letter</span>
+      <span class="letter-display" id="letterDisplay">?</span>
+    </div>
+
+    <!-- Timer -->
+    <div class="timer-box">
+      <span class="timer-label">Time Left</span>
+      <span class="timer-display" id="timerDisplay">3:00</span>
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+      <div class="controls">
+        <button class="btn btn-start" id="btnStart" onclick="startTimer()">▶ Start</button>
+        <button class="btn btn-stop"  id="btnStop"  onclick="stopTimer()" disabled>⏹ Stop</button>
+      </div>
+      <button class="btn btn-new" onclick="newRound()">🎲 New Round</button>
+      <span class="round-info" id="roundInfo">Round 1</span>
+    </div>
+  </div>
+
+  <!-- Time-up banner -->
+  <div class="time-up-banner" id="timeUpBanner">⏰ Time's Up! Pencils down!</div>
+
+  <!-- Categories -->
+  <div class="categories-grid" id="categoriesGrid"></div>
+
+  <!-- How to play -->
+  <div class="how-to">
+    <h2>How to Play</h2>
+    <ol>
+      <li>Click <strong>New Round</strong> to get a random letter and 12 categories.</li>
+      <li>Press <strong>Start</strong> — you have <strong>3 minutes</strong>!</li>
+      <li>Write one answer for each category that starts with the letter shown.</li>
+      <li>Score 1 point per answer. <strong>Bonus:</strong> score 2 points if nobody else wrote the same thing!</li>
+      <li>Most points after 3 rounds wins. 🏆</li>
+    </ol>
+  </div>
+
+  <footer>Made with ❤️ for Rinka</footer>
+
+<script>
+  // ── All categories pool ──────────────────────────────────────────────────
+  const ALL_CATEGORIES = [
+    "Animals",
+    "Foods you love",
+    "Things at a playground",
+    "Cartoon characters",
+    "Sports",
+    "Countries",
+    "Things in a backpack",
+    "Superheroes",
+    "Board games",
+    "Things that are blue",
+    "Fruits & vegetables",
+    "Ice cream flavors",
+    "Things that make you laugh",
+    "Famous people",
+    "Things at the beach",
+    "Toys",
+    "Things in a kitchen",
+    "Movie titles",
+    "Book titles",
+    "Songs",
+    "Things that are round",
+    "Things you do on weekends",
+    "Pizza toppings",
+    "Candy or sweets",
+    "School subjects",
+    "Things in outer space",
+    "Animals that can swim",
+    "Things that are soft",
+    "Things you find in a forest",
+    "Video games",
+    "Hobbies",
+    "Things that are loud",
+    "Colors",
+    "Names that start with the letter",
+    "Things that fly",
+    "Jobs or careers",
+    "Things in a grocery store",
+    "Holiday traditions",
+    "TV shows",
+    "Things that are cold",
+    "Breakfast foods",
+    "Things that are shiny",
+    "Animals that are black & white",
+    "Things you do before school",
+    "Places you can visit",
+    "Musical instruments",
+    "Things that are tiny",
+    "Things that are huge",
+    "Words that rhyme",
+    "Dances",
+  ];
+
+  // Letters (no Q, X, Z for easier play)
+  const LETTERS = "ABCDEFGHIJKLMNOPRSTUVWY".split("");
+
+  // ── State ────────────────────────────────────────────────────────────────
+  const TOTAL_SECONDS = 180;
+  let secondsLeft  = TOTAL_SECONDS;
+  let timerRunning = false;
+  let timerID      = null;
+  let round        = 1;
+
+  // ── DOM refs ─────────────────────────────────────────────────────────────
+  const letterDisplay  = document.getElementById("letterDisplay");
+  const timerDisplay   = document.getElementById("timerDisplay");
+  const progressBar    = document.getElementById("progressBar");
+  const btnStart       = document.getElementById("btnStart");
+  const btnStop        = document.getElementById("btnStop");
+  const timeUpBanner   = document.getElementById("timeUpBanner");
+  const categoriesGrid = document.getElementById("categoriesGrid");
+  const roundInfo      = document.getElementById("roundInfo");
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, "0")}`;
+  }
+
+  function updateTimer() {
+    timerDisplay.textContent = formatTime(secondsLeft);
+    const pct = (secondsLeft / TOTAL_SECONDS) * 100;
+    progressBar.style.width = pct + "%";
+    const urgent = secondsLeft <= 30;
+    timerDisplay.classList.toggle("urgent", urgent);
+    progressBar.classList.toggle("urgent", urgent);
+  }
+
+  // ── New round ────────────────────────────────────────────────────────────
+  function newRound() {
+    stopTimer();
+    timeUpBanner.classList.remove("show");
+
+    // Random letter
+    const letter = LETTERS[Math.floor(Math.random() * LETTERS.length)];
+    letterDisplay.textContent = letter;
+
+    // Pick 12 random categories
+    const picked = shuffle(ALL_CATEGORIES).slice(0, 12);
+    categoriesGrid.innerHTML = picked.map((cat, i) => `
+      <div class="category-card">
+        <span class="category-num">${i + 1}.</span>
+        <span class="category-name">${cat}</span>
+      </div>
+    `).join("");
+
+    // Reset timer
+    secondsLeft = TOTAL_SECONDS;
+    updateTimer();
+    btnStart.disabled = false;
+    roundInfo.textContent = `Round ${round}`;
+  }
+
+  // ── Timer controls ───────────────────────────────────────────────────────
+  function startTimer() {
+    if (timerRunning) return;
+    if (letterDisplay.textContent === "?") { newRound(); }
+    timeUpBanner.classList.remove("show");
+    timerRunning = true;
+    btnStart.disabled = true;
+    btnStop.disabled  = false;
+
+    timerID = setInterval(() => {
+      secondsLeft--;
+      updateTimer();
+      if (secondsLeft <= 0) {
+        clearInterval(timerID);
+        timerRunning = false;
+        btnStop.disabled  = true;
+        btnStart.disabled = true;
+        timeUpBanner.classList.add("show");
+        round++;
+      }
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (timerID) { clearInterval(timerID); timerID = null; }
+    timerRunning = false;
+    btnStart.disabled = secondsLeft <= 0;
+    btnStop.disabled  = true;
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────────────
+  newRound();
+  round = 1; // newRound doesn't increment round, reset after init
+  roundInfo.textContent = "Round 1";
+</script>
+</body>
+</html>
