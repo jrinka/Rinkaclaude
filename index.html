@@ -323,16 +323,16 @@
     <!-- Controls -->
     <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
       <div class="controls">
-        <button class="btn btn-start" id="btnStart" onclick="startTimer()">▶ Start</button>
-        <button class="btn btn-stop"  id="btnStop"  onclick="stopTimer()" disabled>⏹ Stop</button>
+        <button class="btn btn-start" id="btnStart" onclick="startTimer()">&#9654; Start</button>
+        <button class="btn btn-stop"  id="btnStop"  onclick="stopTimer()" disabled>&#9209; Stop</button>
       </div>
-      <button class="btn btn-new" onclick="newRound()">🎲 New Round</button>
+      <button class="btn btn-new" onclick="newRound()">&#127922; New Round</button>
       <span class="round-info" id="roundInfo">Round 1</span>
     </div>
   </div>
 
   <!-- Time-up banner -->
-  <div class="time-up-banner" id="timeUpBanner">⏰ Time's Up! Pencils down!</div>
+  <div class="time-up-banner" id="timeUpBanner">&#9200; Time's Up! Pencils down!</div>
 
   <!-- Categories -->
   <div class="categories-grid" id="categoriesGrid"></div>
@@ -345,14 +345,13 @@
       <li>Press <strong>Start</strong> — you have <strong>3 minutes</strong>!</li>
       <li>Write one answer for each category that starts with the letter shown.</li>
       <li>Score 1 point per answer. <strong>Bonus:</strong> score 2 points if nobody else wrote the same thing!</li>
-      <li>Most points after 3 rounds wins. 🏆</li>
+      <li>Most points after 3 rounds wins. &#127942;</li>
     </ol>
   </div>
 
-  <footer>Made with ❤️ for Rinka</footer>
+  <footer>Made with &#10084;&#65039; for Rinka</footer>
 
 <script>
-  // ── All categories pool ──────────────────────────────────────────────────
   const ALL_CATEGORIES = [
     "Animals",
     "Foods you love",
@@ -406,17 +405,13 @@
     "Dances",
   ];
 
-  // Letters (no Q, X, Z for easier play)
   const LETTERS = "ABCDEFGHIJKLMNOPRSTUVWY".split("");
-
-  // ── State ────────────────────────────────────────────────────────────────
   const TOTAL_SECONDS = 180;
   let secondsLeft  = TOTAL_SECONDS;
   let timerRunning = false;
   let timerID      = null;
   let round        = 1;
 
-  // ── DOM refs ─────────────────────────────────────────────────────────────
   const letterDisplay  = document.getElementById("letterDisplay");
   const timerDisplay   = document.getElementById("timerDisplay");
   const progressBar    = document.getElementById("progressBar");
@@ -426,7 +421,6 @@
   const categoriesGrid = document.getElementById("categoriesGrid");
   const roundInfo      = document.getElementById("roundInfo");
 
-  // ── Helpers ──────────────────────────────────────────────────────────────
   function shuffle(arr) {
     const a = [...arr];
     for (let i = a.length - 1; i > 0; i--) {
@@ -451,16 +445,11 @@
     progressBar.classList.toggle("urgent", urgent);
   }
 
-  // ── New round ────────────────────────────────────────────────────────────
   function newRound() {
     stopTimer();
     timeUpBanner.classList.remove("show");
-
-    // Random letter
     const letter = LETTERS[Math.floor(Math.random() * LETTERS.length)];
     letterDisplay.textContent = letter;
-
-    // Pick 12 random categories
     const picked = shuffle(ALL_CATEGORIES).slice(0, 12);
     categoriesGrid.innerHTML = picked.map((cat, i) => `
       <div class="category-card">
@@ -468,15 +457,12 @@
         <span class="category-name">${cat}</span>
       </div>
     `).join("");
-
-    // Reset timer
     secondsLeft = TOTAL_SECONDS;
     updateTimer();
     btnStart.disabled = false;
     roundInfo.textContent = `Round ${round}`;
   }
 
-  // ── Timer controls ───────────────────────────────────────────────────────
   function startTimer() {
     if (timerRunning) return;
     if (letterDisplay.textContent === "?") { newRound(); }
@@ -484,7 +470,6 @@
     timerRunning = true;
     btnStart.disabled = true;
     btnStop.disabled  = false;
-
     timerID = setInterval(() => {
       secondsLeft--;
       updateTimer();
@@ -506,10 +491,9 @@
     btnStop.disabled  = true;
   }
 
-  // ── Init ─────────────────────────────────────────────────────────────────
   newRound();
-  round = 1; // newRound doesn't increment round, reset after init
+  round = 1;
   roundInfo.textContent = "Round 1";
-</script>
+<\/script>
 </body>
 </html>
